@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Analogy · Employee Reviews Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #6FCF97;
+            color: #1e293b;
+            padding: 2rem 1.5rem;
+        }
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #032c50, #1e4a76);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .header p {
+            color: #4b5563;
+            margin-top: 0.3rem;
+        }
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: rgb(248, 244, 244);
+            border-radius: 1.5rem;
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #e4e9f0;
+            min-width: 120px;
+        }
+        .stat-card.active {
+            border: 2px solid;
+            transform: translateY(-3px);
+        }
+        .stat-card.total.active { border-color: #4f46e5; background: #f8f7ff; }
+        .stat-card.positive.active { border-color: #10b981; background: #f0fdf9; }
+        .stat-card.negative.active { border-color: #ef4444; background: #fef2f2; }
+        .stat-card.neutral.active { border-color: #f59e0b; background: #fffbeb; }
+        .stat-number {
+            font-size: 2.1rem;
+            font-weight: 800;
+        }
+        .stat-card.total .stat-number { color: #4f46e5; }
+        .stat-card.positive .stat-number { color: #10b981; }
+        .stat-card.negative .stat-number { color: #ef4444; }
+        .stat-card.neutral .stat-number { color: #f59e0b; }
+        .stat-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #475569;
+        }
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(234, 234, 233, 0.966);
+            padding: 0.7rem 1.3rem;
+            border-radius: 3rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .filter-btn, .level-btn {
+            border: none;
+            background: #f1f5f9;
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .filter-btn.active {
+            background: #4f46e5;
+            color: white;
+        }
+        .level-btn {
+            background: #eef2ff;
+            color: #1e3a8a;
+        }
+        .reset-btn {
+            background: #e2e8f0;
+            color: #334155;
+        }
+        .result-info {
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: #f1f5f9;
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+        }
+        .insight-row {
+            display: flex;
+            gap: 1.2rem;
+            margin-bottom: 1.8rem;
+            flex-wrap: wrap;
+        }
+        .insight-card {
+            flex: 1;
+            background: white;
+            border-radius: 1rem;
+            padding: 1rem 1.2rem;
+            border-left: 5px solid;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .insight-card.positive { border-left-color: #10b981; }
+        .insight-card.negative { border-left-color: #ef4444; }
+        .insight-card h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .insight-card p {
+            font-size: 0.85rem;
+            color: #334155;
+            line-height: 1.45;
+        }
+        .dimensions {
+            background: white;
+            border-radius: 1rem;
+            padding: 1rem 1.2rem;
+            margin-bottom: 1.8rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .dim-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 0.5rem;
+        }
+        .dim-tag {
+            background: #f1f5f9;
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .dim-tag.pos { background: #d1fae5; color: #065f46; }
+        .dim-tag.neg { background: #fee2e2; color: #991b1b; }
+        .reviews-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        .review-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.2rem 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #edf2f7;
+            transition: 0.2s;
+        }
+        .review-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -12px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 0.8rem;
+        }
+        .rating {
+            background: #fbbf24;
+            color: #1e293b;
+            font-weight: 700;
+            padding: 0.2rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+        }
+        .sentiment-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2rem 0.8rem;
+            border-radius: 2rem;
+        }
+        .sentiment-badge.positive { background: #d1fae5; color: #065f46; }
+        .sentiment-badge.negative { background: #fee2e2; color: #991b1b; }
+        .sentiment-badge.neutral { background: #fef3c7; color: #92400e; }
+        .review-likes, .review-dislikes {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            line-height: 1.45;
+            color: #2c3e50;
+        }
+        .review-summary {
+            background: #f8fafc;
+            padding: 0.6rem 1rem;
+            border-radius: 0.8rem;
+            margin-top: 0.8rem;
+            font-size: 0.8rem;
+            border-left: 3px solid #cbd5e1;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .page-btn, .nav-btn {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 0.4rem 0.9rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .page-btn.active-page {
+            background: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+        .page-btn:hover:not(.active-page), .nav-btn:hover {
+            background: #eef2ff;
+        }
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .loader {
+            text-align: center;
+            padding: 3rem;
+            color: #4b5563;
+        }
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #6c757d;
+        }
+        @media (max-width: 700px) {
+            body { padding: 1rem; }
+            .stat-card { padding: 0.6rem 1rem; min-width: 85px; }
+            .stat-number { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Cloud Analogy · Employee Reviews</h1>
+        <p>405 real reviews — sentiment, insights & live filtering</p>
+    </div>
+
+    <div class="stats-row" id="statsRow"></div>
+
+    <div class="action-bar">
+        <div class="filter-group" id="filterGroup"></div>
+        <div>
+            <button class="level-btn" id="levelSortBtn"> Highest rating first</button>
+            <button class="level-btn reset-btn" id="resetOrderBtn"> Original order</button>
+        </div>
+        <div class="result-info" id="resultInfo">Loading reviews...</div>
+    </div>
+
+    <div class="insight-row">
+        <div class="insight-card positive">
+            <h4> Overall positive</h4>
+            <p>Employees value flexible timings, supportive leadership (Ajay Sir), excellent learning in Salesforce ecosystem, collaborative culture, and good work-life balance. Many appreciate skill development programs and competitive hikes.</p>
+        </div>
+        <div class="insight-card negative">
+            <h4> Overall negative</h4>
+            <p>Main concerns: lack of job security (layoffs when projects end), frequent micro‑management, unprofessional manager behaviour, office politics, and poor work-life balance in certain teams.</p>
+        </div>
+    </div>
+
+    <div class="dimensions">
+        <h4> Key dimensions (employee driven)</h4>
+        <div class="dim-tags">
+            <span class="dim-tag pos"> Work Culture</span>
+            <span class="dim-tag pos"> Learning Opportunities</span>
+            <span class="dim-tag pos"> Salary & Benefits</span>
+            <span class="dim-tag pos"> Work‑Life Balance</span>
+            <span class="dim-tag neg"> Job Security</span>
+            <span class="dim-tag neg"> Management</span>
+            <span class="dim-tag neg"> Politics</span>
+        </div>
+    </div>
+
+    <div id="reviewsContainer" class="reviews-container">
+        <div class="loader">📡 Loading 385 reviews from analysed_reviews.json ...</div>
+    </div>
+    <div id="paginationControls" class="pagination"></div>
+    <div class="footer">* Sentiment derived from overall rating (≥4 positive, 3 neutral, ≤2 negative). Data source: analysed_reviews.json</div>
+</div>
+
+<script>
+    // ------------------- GLOBAL STATE -------------------
+    let allReviews = [];
+    let currentFilter = "all";
+    let currentPage = 1;
+    let isSortedByRating = false;
+    let filteredAndSorted = [];
+    const itemsPerPage = 10;
+
+    // DOM elements
+    const statsRow = document.getElementById("statsRow");
+    const filterGroup = document.getElementById("filterGroup");
+    const reviewsContainer = document.getElementById("reviewsContainer");
+    const paginationDiv = document.getElementById("paginationControls");
+    const resultInfoSpan = document.getElementById("resultInfo");
+    const levelBtn = document.getElementById("levelSortBtn");
+    const resetBtn = document.getElementById("resetOrderBtn");
+
+    // Helper: derive sentiment from numeric rating
+    function getSentiment(ratingStr) {
+        const r = parseFloat(ratingStr);
+        if (isNaN(r)) return "neutral";
+        if (r >= 4.0) return "positive";
+        if (r <= 2.0) return "negative";
+        return "neutral";
+    }
+
+    // Clean up text (remove extra prefixes)
+    function cleanText(text) {
+        if (!text) return "—";
+        let cleaned = text.replace(/^:\s*/, "").replace(/Read More$/, "").trim();
+        if (cleaned.length > 500) cleaned = cleaned.substring(0, 500) + "...";
+        return cleaned || "—";
+    }
+
+    // Generate a summary from likes/dislikes if not already present
+    function generateSummary(rev) {
+        if (rev.summary && rev.summary !== "No summary available.") return rev.summary;
+        let likes = rev.likes ? rev.likes.substring(0, 120) : "";
+        let dislikes = rev.dislikes ? rev.dislikes.substring(0, 120) : "";
+        if (likes && dislikes) return ` ${likes} |  ${dislikes}`;
+        if (likes) return ` ${likes}`;
+        if (dislikes) return ` ${dislikes}`;
+        return "No detailed feedback.";
+    }
+
+   // Escape HTML to prevent XSS
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
+
+    // Update the stat cards with active highlighting
+    function updateStatsUI() {
+        const total = allReviews.length;
+        const positive = allReviews.filter(r => getSentiment(r.overall_rating) === "positive").length;
+        const negative = allReviews.filter(r => getSentiment(r.overall_rating) === "negative").length;
+        const neutral = allReviews.filter(r => getSentiment(r.overall_rating) === "neutral").length;
+        statsRow.innerHTML = `
+            <div class="stat-card total ${currentFilter === 'all' ? 'active' : ''}" data-filter="all">
+                <div class="stat-number">${total}</div>
+                <div class="stat-label">Total Reviews</div>
+            </div>
+            <div class="stat-card positive ${currentFilter === 'positive' ? 'active' : ''}" data-filter="positive">
+                <div class="stat-number">${positive}</div>
+                <div class="stat-label">Positive</div>
+            </div>
+            <div class="stat-card negative ${currentFilter === 'negative' ? 'active' : ''}" data-filter="negative">
+                <div class="stat-number">${negative}</div>
+                <div class="stat-label">Negative</div>
+            </div>
+            <div class="stat-card neutral ${currentFilter === 'neutral' ? 'active' : ''}" data-filter="neutral">
+                <div class="stat-number">${neutral}</div>
+                <div class="stat-label">Neutral</div>
+            </div>
+        `;
+        // attach click handlers to stat cards for filtering
+        document.querySelectorAll(".stat-card").forEach(card => {
+            card.addEventListener("click", () => {
+                currentFilter = card.dataset.filter;
+                currentPage = 1;
+                applyFilterAndSort();
+                updateStatsUI();
+                // sync filter buttons active state
+                document.querySelectorAll(".filter-btn").forEach(btn => {
+                    if (btn.dataset.sentiment === currentFilter) btn.classList.add("active");
+                    else btn.classList.remove("active");
+                });
+            });
+        });
+    }
+
+    // Apply current filter and sort to generate filteredAndSorted array
+    function applyFilterAndSort() {
+        let filtered = [...allReviews];
+        if (currentFilter !== "all") {
+            filtered = filtered.filter(r => getSentiment(r.overall_rating) === currentFilter);
+        }
+        if (isSortedByRating) {
+            filtered.sort((a, b) => parseFloat(b.overall_rating || 0) - parseFloat(a.overall_rating || 0));
+        }
+        filteredAndSorted = filtered;
+        currentPage = 1;
+        renderCurrentView();
+        updateResultCount();
+    }
+
+    // Render current page of reviews
+    function renderCurrentView() {
+        if (!filteredAndSorted.length) {
+            reviewsContainer.innerHTML = `<div style="background:white; padding:2rem; text-align:center; border-radius:1rem;">📭 No reviews match the selected filter.</div>`;
+            paginationDiv.innerHTML = "";
+            return;
+        }
+        const totalPages = Math.ceil(filteredAndSorted.length / itemsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages;
+        const start = (currentPage - 1) * itemsPerPage;
+        const pageReviews = filteredAndSorted.slice(start, start + itemsPerPage);
+        
+        reviewsContainer.innerHTML = pageReviews.map(rev => {
+            const ratingVal = rev.overall_rating ? parseFloat(rev.overall_rating).toFixed(1) : "N/A";
+            const sentiment = getSentiment(rev.overall_rating);
+            return `
+                <div class="review-card">
+                    <div class="card-header">
+                        <span class="rating"> ${ratingVal}</span>
+                        <span class="sentiment-badge ${sentiment}">${sentiment.toUpperCase()}</span>
+                    </div>
+                    <div class="review-likes"><strong> Likes:</strong> ${escapeHtml(cleanText(rev.likes))}</div>
+                    <div class="review-dislikes"><strong> Dislikes:</strong> ${escapeHtml(cleanText(rev.dislikes))}</div>
+                    <div class="review-summary"><strong> Insight:</strong> ${escapeHtml(generateSummary(rev))}</div>
+                </div>
+            `;
+        }).join("");
+        renderPagination(totalPages);
+    }
+
+    // Render pagination controls (with previous/next and numbered pages)
+    function renderPagination(totalPages) {
+        if (totalPages <= 1) {
+            paginationDiv.innerHTML = "";
+            return;
+        }
+        let html = `<button class="nav-btn" id="prevPageBtn" ${currentPage === 1 ? 'disabled' : ''}>◀ Previous</button>`;
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+        if (startPage > 1) {
+            html += `<button class="page-btn" data-page="1">1</button>`;
+            if (startPage > 2) html += `<span class="ellipsis">…</span>`;
+        }
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<button class="page-btn ${currentPage === i ? 'active-page' : ''}" data-page="${i}">${i}</button>`;
+        }
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += `<span class="ellipsis">…</span>`;
+            html += `<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`;
+        }
+        html += `<button class="nav-btn" id="nextPageBtn" ${currentPage === totalPages ? 'disabled' : ''}>Next ▶</button>`;
+        paginationDiv.innerHTML = html;
+        
+        // attach numbered page click events
+        document.querySelectorAll(".page-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                currentPage = parseInt(e.target.dataset.page);
+                renderCurrentView();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+        const prev = document.getElementById("prevPageBtn");
+        const next = document.getElementById("nextPageBtn");
+        if (prev) prev.addEventListener("click", () => { if (currentPage > 1) { currentPage--; renderCurrentView(); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+        if (next) next.addEventListener("click", () => { if (currentPage < totalPages) { currentPage++; renderCurrentView(); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+    }
+
+    function updateResultCount() {
+        resultInfoSpan.innerText = `📄 ${filteredAndSorted.length} of ${allReviews.length} reviews (page ${currentPage})`;
+    }
+
+    // Build filter buttons (All, Positive, Negative, Neutral)
+    function buildFilterButtons() {
+        filterGroup.innerHTML = `
+            <button class="filter-btn active" data-sentiment="all"> All</button>
+            <button class="filter-btn" data-sentiment="positive"> Positive</button>
+            <button class="filter-btn" data-sentiment="negative"> Negative</button>
+            <button class="filter-btn" data-sentiment="neutral"> Neutral</button>
+        `;
+        document.querySelectorAll(".filter-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                currentFilter = btn.dataset.sentiment;
+                currentPage = 1;
+                applyFilterAndSort();
+                updateStatsUI();
+                document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+            });
+        });
+    }
+
+    // Load data from analysed_reviews.json
+    async function loadData() {
+        try {
+            reviewsContainer.innerHTML = `<div class="loader">📡 Fetching analysed_reviews.json ...</div>`;
+            const response = await fetch('./analysed_reviews.json');
+            if (!response.ok) throw new Error(`HTTP ${response.status} – file not found. Place analysed_reviews.json in the same folder.`);
+            const data = await response.json();
+            if (!data.reviews || !Array.isArray(data.reviews)) throw new Error("Invalid JSON: missing 'reviews' array.");
+            allReviews = data.reviews;
+            console.log(`Loaded ${allReviews.length} reviews`);
+            applyFilterAndSort();
+            updateStatsUI();
+            buildFilterButtons();
+        } catch (err) {
+            console.error(err);
+            reviewsContainer.innerHTML = `<div style="background:#ffe6e6; padding:1.5rem; border-radius:1rem; color:#b91c1c;">
+                ❌ Failed to load analysed_reviews.json.<br>
+                Make sure the file exists in the same directory as this HTML.<br>
+                <small>${err.message}</small>
+            </div>`;
+            resultInfoSpan.innerText = "Error loading data";
+        }
+    }
+
+    // Event listeners for sort buttons
+    levelBtn.addEventListener("click", () => {
+        isSortedByRating = true;
+        applyFilterAndSort();
+    });
+    resetBtn.addEventListener("click", () => {
+        isSortedByRating = false;
+        applyFilterAndSort();
+    });
+
+    // Start the app
+    loadData();
+</script>
+</body>
+</html>
